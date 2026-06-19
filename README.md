@@ -32,11 +32,12 @@ Requires macOS 14 (Sonoma) or later.
 
 ```bash
 git clone https://github.com/wieandteduard/port-menu.git
-cd Porter
-open Porter.xcodeproj
+cd port-menu
+swift build
+swift run porter
 ```
 
-Requires Xcode 15+.
+Requires Swift 6+ on macOS 14 or later. The Xcode project is still available if you prefer opening `Porter.xcodeproj`.
 
 ## Release
 
@@ -47,7 +48,7 @@ Maintainers can follow the release process in `docs/releasing.md`.
 ## Testing
 
 ```bash
-xcodebuild test -project "Porter.xcodeproj" -scheme "Porter" -destination "platform=macOS"
+swift test
 ```
 
 ## License

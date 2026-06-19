@@ -1,5 +1,7 @@
 build/
+.build/
 dist/
+session-ses_*.md
 *.profraw
 *.xcarchive
 DerivedData/

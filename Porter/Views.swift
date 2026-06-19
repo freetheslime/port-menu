@@ -1,20 +1,32 @@
 import ServiceManagement
-import Sparkle
 import SwiftUI
+
+#if canImport(Sparkle)
+import Sparkle
+#endif
+
+protocol AppUpdateChecking {
+    var canCheckForUpdates: Bool { get }
+    func checkForUpdates()
+}
+
+#if canImport(Sparkle)
+extension SPUUpdater: AppUpdateChecking {}
+#endif
 
 // MARK: - Check for Updates
 
 struct CheckForUpdatesView: View {
-    let updater: SPUUpdater
+    let updater: (any AppUpdateChecking)?
     @State private var canCheckForUpdates = false
 
     var body: some View {
         Button("Check for Updates…") {
-            updater.checkForUpdates()
+            updater?.checkForUpdates()
         }
         .disabled(!canCheckForUpdates)
         .onAppear {
-            canCheckForUpdates = updater.canCheckForUpdates
+            canCheckForUpdates = updater?.canCheckForUpdates ?? false
         }
     }
 }
@@ -24,7 +36,7 @@ struct CheckForUpdatesView: View {
 struct PortListView: View {
     @Environment(PortStore.self) private var store
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    var updater: SPUUpdater
+    var updater: (any AppUpdateChecking)?
 
     var body: some View {
         Group {
@@ -43,7 +55,7 @@ struct PortListView: View {
 
 struct PortMainContentView: View {
     @Environment(PortStore.self) private var store
-    var updater: SPUUpdater
+    var updater: (any AppUpdateChecking)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -70,7 +82,7 @@ struct PortHeaderView: View {
     @State private var menuHovered = false
     @State private var showMenu = false
     @State private var launchAtLoginError: String?
-    var updater: SPUUpdater
+    var updater: (any AppUpdateChecking)?
 
     private var appVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "–"

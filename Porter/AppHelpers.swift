@@ -4,6 +4,8 @@ import os
 @MainActor
 func moveToApplicationsIfNeeded() {
     let bundlePath = Bundle.main.bundlePath
+    guard bundlePath.hasSuffix(".app") else { return }
+
     let destinationURL = URL(filePath: "/Applications/Port Menu.app")
     let fileManager = FileManager.default
 
