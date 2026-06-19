@@ -13,6 +13,7 @@ private final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
 @main
 struct PorterApp: App {
     @State private var store = PortStore.shared
+    @AppStorage("hideMenuBarWhenEmpty") private var hideMenuBarWhenEmpty = false
 
     #if canImport(Sparkle)
     private let updaterController: SPUStandardUpdaterController
@@ -29,10 +30,13 @@ struct PorterApp: App {
         #endif
 
         moveToApplicationsIfNeeded()
+        Task { @MainActor in
+            PortStore.shared.ensurePolling()
+        }
     }
 
     var body: some Scene {
-        MenuBarExtra {
+        MenuBarExtra(isInserted: isMenuBarExtraInserted) {
             PortListView(updater: updater)
                 .environment(store)
         } label: {
@@ -45,7 +49,6 @@ struct PorterApp: App {
                 Text(store.entries.count, format: .number)
                     .fontDesign(.monospaced)
             }
-            .onAppear { store.ensurePolling() }
         }
         .menuBarExtraStyle(.window)
         .commands {
@@ -61,6 +64,13 @@ struct PorterApp: App {
         #else
         nil
         #endif
+    }
+
+    private var isMenuBarExtraInserted: Binding<Bool> {
+        Binding(
+            get: { hideMenuBarWhenEmpty ? !store.entries.isEmpty : true },
+            set: { _ in }
+        )
     }
 
     private var statusColor: Color {
