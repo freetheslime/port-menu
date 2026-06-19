@@ -15,6 +15,16 @@ struct PorterApp: App {
     @AppStorage("hideMenuBarWhenEmpty") private var hideMenuBarWhenEmpty = false
 
     init() {
+        // Singleton: if another instance is already running, just quit.
+        let bundleId = Bundle.main.bundleIdentifier
+        let other = NSWorkspace.shared.runningApplications.first {
+            $0.bundleIdentifier == bundleId && $0 != NSRunningApplication.current
+        }
+        if other != nil {
+            NSApp.terminate(nil)
+            return
+        }
+
         updaterController = SPUStandardUpdaterController(
             startingUpdater: true,
             updaterDelegate: updaterDelegate,
