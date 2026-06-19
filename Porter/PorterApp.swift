@@ -29,6 +29,16 @@ struct PorterApp: App {
         )
         #endif
 
+        // Singleton: if another instance is already running, just quit.
+        let bundleId = Bundle.main.bundleIdentifier
+        let other = NSWorkspace.shared.runningApplications.first {
+            $0.bundleIdentifier == bundleId && $0 != NSRunningApplication.current
+        }
+        if other != nil {
+            NSApp.terminate(nil)
+            return
+        }
+
         moveToApplicationsIfNeeded()
         Task { @MainActor in
             PortStore.shared.ensurePolling()
