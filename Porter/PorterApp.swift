@@ -12,6 +12,7 @@ struct PorterApp: App {
     @State private var store = PortStore.shared
     private let updaterController: SPUStandardUpdaterController
     private let updaterDelegate = UpdaterDelegate()
+    @AppStorage("hideMenuBarWhenEmpty") private var hideMenuBarWhenEmpty = false
 
     init() {
         updaterController = SPUStandardUpdaterController(
@@ -20,10 +21,13 @@ struct PorterApp: App {
             userDriverDelegate: nil
         )
         moveToApplicationsIfNeeded()
+        Task { @MainActor in
+            PortStore.shared.ensurePolling()
+        }
     }
 
     var body: some Scene {
-        MenuBarExtra {
+        MenuBarExtra(isInserted: isMenuBarExtraInserted) {
             PortListView(updater: updaterController.updater)
                 .environment(store)
         } label: {
@@ -36,7 +40,6 @@ struct PorterApp: App {
                 Text(store.entries.count, format: .number)
                     .fontDesign(.monospaced)
             }
-            .onAppear { store.ensurePolling() }
         }
         .menuBarExtraStyle(.window)
         .commands {
@@ -44,6 +47,13 @@ struct PorterApp: App {
                 CheckForUpdatesView(updater: updaterController.updater)
             }
         }
+    }
+
+    private var isMenuBarExtraInserted: Binding<Bool> {
+        Binding(
+            get: { hideMenuBarWhenEmpty ? !store.entries.isEmpty : true },
+            set: { _ in }
+        )
     }
 
     private var statusColor: Color {
